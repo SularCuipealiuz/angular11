@@ -66,6 +66,7 @@ export class AppComponent {
         });
 
         this.todoListFiltered = this.filterData(this.todoList);
+        this.onChangeFilter(this.selectedFilter);
         this.filterLength = this.todoList.filter(e => e.checked === false).length;
       });
   }
@@ -106,11 +107,12 @@ export class AppComponent {
     }
 
     this.todoListFiltered = this.filterData(this.todoListFiltered);
+    this.filterLength = this.todoList.filter(e => e.checked === false).length;
   }
 
   onCheckItem(item: any): void {
     item.checked = !item.checked;
-    this.filterLength = this.todoList.filter(e => e.checked === false).length;
+    this.onChangeFilter(this.selectedFilter);
   }
 
   async onDestroy(item: any): Promise<any> {
@@ -131,6 +133,7 @@ export class AppComponent {
     });
     setTimeout(() => {
       this.getData();
+      this.onChangeFilter(this.selectedFilter);
       this.isSelectAll = false;
     }, 400);
   }
@@ -140,6 +143,7 @@ export class AppComponent {
     this.todoList.forEach(e => {
       this.isSelectAll ? e.checked = true : e.checked = false;
     });
+    this.onChangeFilter(this.selectedFilter);
   }
 
   async postData(value: string): Promise<any> {
