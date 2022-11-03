@@ -26,19 +26,29 @@ export class AppComponent {
   windowsWidth = '500';
   currentPage = 0;
   perPage = 5;
+  totalCount = 0;
 
   ngOnInit() {
     this.getData();
   }
 
+  refresh(): void {
+    this.todoListFiltered = this.filterData(this.todoList);
+    this.onChangeFilter(this.selectedFilter);
+  }
+
   onClickLeft(): void {
     this.currentPage = this.currentPage > 0 ? this.currentPage - 1 : this.currentPage;
-    this.todoListFiltered = this.filterData(this.todoList);
+    this.refresh();
   }
 
   onClickRight(): void {
-    this.currentPage = this.currentPage + 1 > (this.todoList.length / this.perPage) ? this.currentPage : this.currentPage + 1;
-    this.todoListFiltered = this.filterData(this.todoList);
+    this.currentPage = this.currentPage + 1 > this.getCeil(this.totalCount, this.perPage) - 1 ? this.currentPage : this.currentPage + 1;
+    this.refresh();
+  }
+
+  getCeil(num1, num2): number {
+    return Math.ceil(num1 / num2);
   }
 
   filterData(list: any[]): any[] {
@@ -59,14 +69,13 @@ export class AppComponent {
       .then(res => res.json())
       .then(data => {
         this.todoList = data.map(e => {
-          e.checked = false;
+          e.checked = e.checked ? e.checked : false;
           e.hovered = false;
           e.editing = false;
           return e;
         });
 
-        this.todoListFiltered = this.filterData(this.todoList);
-        this.onChangeFilter(this.selectedFilter);
+        this.refresh();
         this.filterLength = this.todoList.filter(e => e.checked === false).length;
       });
   }
@@ -98,21 +107,34 @@ export class AppComponent {
 
   onChangeFilter(target: string): void {
     this.selectedFilter = target;
+    let filteredList = [];
     if (target === 'Active') {
-      this.todoListFiltered = this.todoList.filter(e => !e.checked);
+      filteredList = this.todoList.filter(e => !e.checked);
     } else if (target === 'Completed') {
-      this.todoListFiltered = this.todoList.filter(e => e.checked);
+      filteredList = this.todoList.filter(e => e.checked);
     } else {
-      this.todoListFiltered = this.todoList;
+      filteredList = this.todoList;
     }
 
-    this.todoListFiltered = this.filterData(this.todoListFiltered);
+    this.totalCount = filteredList.length;
+    this.todoListFiltered = this.filterData(filteredList);
     this.filterLength = this.todoList.filter(e => e.checked === false).length;
   }
 
   onCheckItem(item: any): void {
     item.checked = !item.checked;
+    item.hovered = false;
     this.onChangeFilter(this.selectedFilter);
+
+    const response = fetch('http://localhost:3000/posts/' + item.id, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        checked: item.checked,
+      })
+    });
   }
 
   async onDestroy(item: any): Promise<any> {

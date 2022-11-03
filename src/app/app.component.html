@@ -5,7 +5,8 @@
     </div>
     <div class="page-options">
       <fa-icon [ngClass]="currentPage === 0 ?'disable' : ''" [icon]="faAngleLeft" (click)="onClickLeft()"></fa-icon>
-      <fa-icon [ngClass]="currentPage + 1 >= this.todoList.length / this.perPage ?'disable' : ''" [icon]="faAngleRight" (click)="onClickRight()"></fa-icon>
+      <fa-icon [ngClass]="currentPage + 1 >= getCeil(this.totalCount, this.perPage) ?'disable' : ''"
+               [icon]="faAngleRight" (click)="onClickRight()"></fa-icon>
     </div>
     <div class="todo-panel">
     <span class="flex-center option" [ngClass]="isSelectAll === true ? 'active' : ''">
